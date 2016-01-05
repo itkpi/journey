@@ -21,6 +21,10 @@ adminApp.config(function($routeProvider) {
       templateUrl: 'settings.html',
       controller: 'SettingsCtrl'
     }).
+    when('/users/', {
+      templateUrl: 'users.html',
+      controller: 'UsersCtrl'
+    }).
     otherwise({
           redirectTo: '/'
   });
@@ -33,6 +37,7 @@ adminApp.factory('sharingService', function(){
       post: {},
       blog: {},
       user: {},
+      users: [],
       infiniteScrollFactory: null,
       selected: ''
     }
@@ -99,10 +104,23 @@ adminApp.factory('infiniteScrollFactory', function($http) {
 
 adminApp.controller('ContentCtrl', function ($scope, $http, $sce, $location, infiniteScrollFactory, sharingService){
   //change the navbar according to controller
-  $scope.navbarHtml = $sce.trustAsHtml('<ul class="nav navbar-nav"><li class="active"><a href="#/">Content<span class="sr-only">(current)</span></a></li><li><a href="#/create/">New Post</a></li><li><a href="#/settings/">Settings</a></li><li><a href="logout/" class="logout">Log Out</a></li></ul>');
+  $scope.navbarHtml = $sce.trustAsHtml('<ul class="nav navbar-nav"><li class="active"><a href="#/">Content<span class="sr-only">(current)</span></a></li><li><a href="#/create/">New Post</a></li><li><a href="#/settings/">Settings</a></li><li><a href="#/users/">Users</a></li><li><a href="logout/" class="logout">Log Out</a></li></ul>');
+  $scope.shared = sharingService.shared;
+  $scope.loadData = function() {
+    $http.get('/admin/api/userid').success(function(data) {
+      $scope.authenticatedUser = data;
+      $http.get('/admin/api/user/' + $scope.authenticatedUser.Id).success(function(data) {
+        $scope.shared.user = data;
+      });
+    });
+  };
+  $scope.loadData();
+
   $scope.infiniteScrollFactory = new infiniteScrollFactory('/admin/api/posts/');
-  $scope.openPost = function(postId) {
-    $location.url('/edit/' + postId);
+  $scope.openPost = function(postId, authorId) {
+    if ((authorId == $scope.shared.user.Id) || ($scope.shared.user.Role == 4)) {
+      $location.url('/edit/' + postId);
+    }
   };
   $scope.deletePost = function(postId, postTitle) {
     if (confirm('Are you sure you want to delete the post "' + postTitle + '"?')) {
@@ -116,11 +134,12 @@ adminApp.controller('ContentCtrl', function ($scope, $http, $sce, $location, inf
       });
     }
   };
+
 });
 
 adminApp.controller('SettingsCtrl', function ($scope, $http, $timeout, $sce, $location, sharingService){
   //change the navbar according to controller
-  $scope.navbarHtml = $sce.trustAsHtml('<ul class="nav navbar-nav"><li><a href="#/">Content</a></li><li><a href="#/create/">New Post</a></li><li class="active"><a href="#/settings/">Settings<span class="sr-only">(current)</span></a></li><li><a href="logout/" class="logout">Log Out</a></li></ul>');
+  $scope.navbarHtml = $sce.trustAsHtml('<ul class="nav navbar-nav"><li><a href="#/">Content</a></li><li><a href="#/create/">New Post</a></li><li class="active"><a href="#/settings/">Settings<span class="sr-only">(current)</span></a></li><li><a href="#/users/">Users</a></li><li><a href="logout/" class="logout">Log Out</a></li></ul>');
   $scope.shared = sharingService.shared;
   //variable to hold the field prefix
   $scope.prefix = '';
@@ -128,11 +147,9 @@ adminApp.controller('SettingsCtrl', function ($scope, $http, $timeout, $sce, $lo
     $http.get('/admin/api/blog').success(function(data) {
       $scope.shared.blog = data;
       //select active theme
-      var themeIndex = $scope.shared.blog.Themes.indexOf($scope.shared.blog.ActiveTheme);
-      $scope.shared.blog.ActiveTheme = $scope.shared.blog.Themes[themeIndex];
       //make sure NavigationItems is not null
-      if ($scope.shared.blog.NavigationItems == null) {
-        $scope.shared.blog.NavigationItems = []
+      if ($scope.shared.users == null) {
+        $scope.shared.users = []
       }
       //append the blog url to the navigation items if necessary
       for (var i = 0; i < $scope.shared.blog.NavigationItems.length; i++) {
@@ -173,11 +190,68 @@ adminApp.controller('SettingsCtrl', function ($scope, $http, $timeout, $sce, $lo
   };
 });
 
+adminApp.controller('UsersCtrl', function ($scope, $http, $timeout, $sce, $location, sharingService){
+  //change the navbar according to controller
+  $scope.navbarHtml = $sce.trustAsHtml('<ul class="nav navbar-nav"><li><a href="#/">Content</a></li><li><a href="#/create/">New Post</a></li><li><a href="#/settings/">Settings</a></li><li class="active"><a href="#/users/">Users<span class="sr-only">(current)</span></a></li><li><a href="logout/" class="logout">Log Out</a></li></ul>');
+  $scope.shared = sharingService.shared;
+  //variable to hold the field prefix
+  $scope.prefix = '';
+  $scope.loadData = function() {
+    $http.get('/admin/api/userid').success(function(data) {
+      $scope.authenticatedUser = data;
+      $http.get('/admin/api/user/' + $scope.authenticatedUser.Id).success(function(data) {
+        $scope.shared.user = data;
+      });
+    });
+
+    $http.get('/admin/api/users').success(function(data) {
+      $scope.shared.users = data;
+      // //select active theme
+      // var themeIndex = $scope.shared.blog.Themes.indexOf($scope.shared.blog.ActiveTheme);
+      // $scope.shared.blog.ActiveTheme = $scope.shared.blog.Themes[themeIndex];
+      // //make sure NavigationItems is not null
+      // if ($scope.shared.blog.NavigationItems == null) {
+      //   $scope.shared.blog.NavigationItems = []
+      // }
+      // //append the blog url to the navigation items if necessary
+      // for (var i = 0; i < $scope.shared.blog.NavigationItems.length; i++) {
+      //   var value = $scope.shared.blog.NavigationItems[i].url;
+      //   //if the url of this item doesn't start with http/https, add the blog url to it.
+      //   if (!(value.substring(0, 'http://'.length) === 'http://') && !(value.substring(0, 'https://'.length) === 'https://') && !(value.substring(0, $scope.shared.blog.Url.length) === $scope.shared.blog.Url)) {
+      //     if ((value.substring(0, 1) != '/') && ($scope.shared.blog.Url.slice(-1) != '/')) {
+      //       value = '/' + value;
+      //     }
+      //     value = $scope.shared.blog.Url + value;
+      //     $scope.shared.blog.NavigationItems[i].url = value;
+      //   }
+      // }
+    });
+  };
+  $scope.loadData();
+  // $scope.deleteNavItem = function(index) {
+  //   $scope.shared.blog.NavigationItems.splice(index, 1);
+  // };
+  // $scope.addNavItem = function() {
+  //   var url = $scope.shared.blog.Url
+  //   if (url.slice(-1) != '/') {
+  //     url = url + '/';
+  //   }
+  //   $scope.shared.blog['NavigationItems'].push({label: 'Home', url: url});
+  // };
+  // $scope.save = function() {
+  //   $http.patch('/admin/api/blog', $scope.shared.blog);
+  //   $http.patch('/admin/api/user', $scope.shared.user).success(function(data) {
+  //     $location.url('/');
+  //   });
+  // };
+});
+
+
 adminApp.controller('CreateCtrl', function ($scope, $http, $sce, $location, sharingService){
   //create markdown converter
   var converter = new Showdown.converter();
   //change the navbar according to controller
-  $scope.navbarHtml = $sce.trustAsHtml('<ul class="nav navbar-nav"><li><a href="#/">Content</a></li><li class="active"><a href="#/create/">New Post<span class="sr-only">(current)</span></a></li><li><a href="#/settings/">Settings</a></li><li><a href="logout/" class="logout">Log Out</a></li></ul>');
+  $scope.navbarHtml = $sce.trustAsHtml('<ul class="nav navbar-nav"><li><a href="#/">Content</a></li><li class="active"><a href="#/create/">New Post<span class="sr-only">(current)</span></a></li><li><a href="#/settings/">Settings</a></li><li><a href="#/users/">Users</a></li><li><a href="logout/" class="logout">Log Out</a></li></ul>');
   $scope.shared = sharingService.shared;
   $scope.shared.post = {Title: 'New Post', Slug: '', Markdown: 'Write something!', IsPublished: false, Image: '', Tags: ''}
   $scope.change = function() {
@@ -197,7 +271,7 @@ adminApp.controller('EditCtrl', function ($scope, $routeParams, $http, $sce, $lo
   //create markdown converter
   var converter = new Showdown.converter();
   //change the navbar according to controller
-  $scope.navbarHtml = $sce.trustAsHtml('<ul class="nav navbar-nav"><li><a href="#/">Content</a></li><li><a href="#/create/">New Post</a></li><li><a href="#/settings/">Settings</a></li><li><a href="logout/" class="logout">Log Out</a></li></ul>');
+  $scope.navbarHtml = $sce.trustAsHtml('<ul class="nav navbar-nav"><li><a href="#/">Content</a></li><li><a href="#/create/">New Post</a></li><li><a href="#/settings/">Settings</a></li><li><a href="#/users/">Users</a></li><li><a href="logout/" class="logout">Log Out</a></li></ul>');
   $scope.shared = sharingService.shared;
   $scope.shared.post = {}
   $scope.change = function() {

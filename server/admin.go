@@ -35,6 +35,8 @@ type JsonPost struct {
 	Image       string
 	Date        *time.Time
 	Tags        string
+	AuthorId    int64
+	AuthorName  string
 }
 
 type JsonBlog struct {
@@ -51,6 +53,7 @@ type JsonBlog struct {
 
 type JsonUser struct {
 	Id               int64
+	Role             int
 	Name             string
 	Slug             string
 	Email            string
@@ -130,9 +133,29 @@ func postRegistrationHandler(w http.ResponseWriter, r *http.Request, _ map[strin
 		http.Redirect(w, r, "/admin/", 302)
 		return
 	} else {
-		// TODO: Handle creation of other users (not just the first one)
-		http.Error(w, "Not implemented yet.", http.StatusInternalServerError)
-		return
+
+		name := r.FormValue("name")
+		email := r.FormValue("email")
+		password := r.FormValue("password")
+		if name != "" && password != "" {
+			hashedPassword, err := authentication.EncryptPassword(password)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			user := structure.User{Name: []byte(name), Slug: slug.Generate(name, "users"), Email: []byte(email), Image: []byte(filenames.DefaultUserImageFilename), Cover: []byte(filenames.DefaultUserCoverFilename), Role: 3}
+			err = methods.SaveUser(&user, hashedPassword, 1)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			http.Redirect(w, r, "/admin/#/users/", 302)
+			return
+		} else {
+			http.Error(w, "Not implemented yet.", http.StatusInternalServerError)
+			return
+		}
+
 	}
 }
 
@@ -177,6 +200,16 @@ func adminFileHandler(w http.ResponseWriter, r *http.Request, params map[string]
 func apiPostsHandler(w http.ResponseWriter, r *http.Request, params map[string]string) {
 	userName := authentication.GetUserName(r)
 	if userName != "" {
+		userId, err := getUserId(userName)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		userRole, err := getUserRole(userName)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 		number := params["number"]
 		page, err := strconv.Atoi(number)
 		if err != nil || page < 1 {
@@ -184,10 +217,21 @@ func apiPostsHandler(w http.ResponseWriter, r *http.Request, params map[string]s
 			return
 		}
 		postsPerPage := int64(15)
-		posts, err := database.RetrievePostsForApi(postsPerPage, ((int64(page) - 1) * postsPerPage))
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
+		var posts []structure.Post
+		if userRole == 4 {
+			allPosts, err := database.RetrievePostsForApi(postsPerPage, ((int64(page) - 1) * postsPerPage))
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			posts = allPosts;
+		} else {
+			userPosts, err := database.RetrievePostsForApiByAuthor(userId, postsPerPage, ((int64(page) - 1) * postsPerPage))
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			posts = userPosts;
 		}
 		json, err := json.Marshal(postsToJson(posts))
 		if err != nil {
@@ -207,6 +251,16 @@ func apiPostsHandler(w http.ResponseWriter, r *http.Request, params map[string]s
 func getApiPostHandler(w http.ResponseWriter, r *http.Request, params map[string]string) {
 	userName := authentication.GetUserName(r)
 	if userName != "" {
+		userId, err := getUserId(userName)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		userRole, err := getUserRole(userName)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 		id := params["id"]
 		// Get post
 		postId, err := strconv.ParseInt(id, 10, 64)
@@ -217,6 +271,10 @@ func getApiPostHandler(w http.ResponseWriter, r *http.Request, params map[string
 		post, err := database.RetrievePostById(postId)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		if post.Author.Id != userId && userRole != 4 {
+			http.Error(w, "Not your post", http.StatusInternalServerError)
 			return
 		}
 		json, err := json.Marshal(postToJson(post))
@@ -281,6 +339,11 @@ func patchApiPostHandler(w http.ResponseWriter, r *http.Request, _ map[string]st
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+		userRole, err := getUserRole(userName)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 		// Update post
 		decoder := json.NewDecoder(r.Body)
 		var json JsonPost
@@ -294,6 +357,10 @@ func patchApiPostHandler(w http.ResponseWriter, r *http.Request, _ map[string]st
 		post, err := database.RetrievePostById(json.Id)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		if post.Author.Id != userId && userRole != 4 {
+			http.Error(w, "Not your post", http.StatusInternalServerError)
 			return
 		}
 		if json.Slug != post.Slug { // Check if user has submitted a custom slug
@@ -321,11 +388,31 @@ func patchApiPostHandler(w http.ResponseWriter, r *http.Request, _ map[string]st
 func deleteApiPostHandler(w http.ResponseWriter, r *http.Request, params map[string]string) {
 	userName := authentication.GetUserName(r)
 	if userName != "" {
+		userId, err := getUserId(userName)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		userRole, err := getUserRole(userName)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 		id := params["id"]
 		// Delete post
 		postId, err := strconv.ParseInt(id, 10, 64)
 		if err != nil || postId < 1 {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		post, err := database.RetrievePostById(postId)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		if post.Author.Id != userId && userRole != 4 {
+			http.Error(w, "Not your post", http.StatusInternalServerError)
 			return
 		}
 		err = methods.DeletePost(postId)
@@ -595,8 +682,51 @@ func getApiUserHandler(w http.ResponseWriter, r *http.Request, params map[string
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+		userRole, err := getUserRole(userName)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		user.Role = userRole;
 		userJson := userToJson(user)
 		json, err := json.Marshal(userJson)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(json)
+		return
+	} else {
+		http.Error(w, "Not logged in!", http.StatusInternalServerError)
+		return
+	}
+}
+
+//TODO: return list of users
+func getApiUsersHandler(w http.ResponseWriter, r *http.Request, params map[string]string) {
+	userName := authentication.GetUserName(r)
+	if userName != "" {
+		userRole, err := getUserRole(userName)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		log.Print("Role is " + strconv.Itoa(userRole))
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		} else if (userRole != 4 && userRole != 1) { // Only owner and admin can do it
+			http.Error(w, "You don't have permission to access this data.", http.StatusForbidden)
+			return
+		}
+		users, err := database.RetrieveUsers()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		usersJson := usersToJson(users)
+		json, err := json.Marshal(usersJson)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -733,6 +863,14 @@ func getUserId(userName string) (int64, error) {
 	return user.Id, nil
 }
 
+func getUserRole(userName string) (int, error) {
+	user, err := database.RetrieveUserByName([]byte(userName))
+	if err != nil {
+		return 0, err
+	}
+	return user.Role, nil
+}
+
 func logInUser(name string, w http.ResponseWriter) {
 	authentication.SetSession(name, w)
 	userId, err := getUserId(name)
@@ -765,6 +903,8 @@ func postToJson(post *structure.Post) *JsonPost {
 	jsonPost.IsPublished = post.IsPublished
 	jsonPost.Image = string(post.Image)
 	jsonPost.Date = post.Date
+	jsonPost.AuthorId = post.Author.Id
+	jsonPost.AuthorName = string(post.Author.Name)
 	tags := make([]string, len(post.Tags))
 	for index, _ := range post.Tags {
 		tags[index] = string(post.Tags[index].Name)
@@ -790,6 +930,7 @@ func blogToJson(blog *structure.Blog) *JsonBlog {
 func userToJson(user *structure.User) *JsonUser {
 	var jsonUser JsonUser
 	jsonUser.Id = user.Id
+	jsonUser.Role = user.Role
 	jsonUser.Name = string(user.Name)
 	jsonUser.Slug = user.Slug
 	jsonUser.Email = string(user.Email)
@@ -799,6 +940,14 @@ func userToJson(user *structure.User) *JsonUser {
 	jsonUser.Website = string(user.Website)
 	jsonUser.Location = string(user.Location)
 	return &jsonUser
+}
+
+func usersToJson(users []structure.User) *[]JsonUser {
+	jsonUsers := make([]JsonUser, len(users))
+	for index, _ := range users {
+		jsonUsers[index] = *userToJson(&users[index])
+	}
+	return &jsonUsers
 }
 
 func InitializeAdmin(router *httptreemux.TreeMux) {
@@ -828,6 +977,7 @@ func InitializeAdmin(router *httptreemux.TreeMux) {
 	router.GET("/admin/api/blog", getApiBlogHandler)
 	router.PATCH("/admin/api/blog", patchApiBlogHandler)
 	// User
+	router.GET("/admin/api/users", getApiUsersHandler)
 	router.GET("/admin/api/user/:id", getApiUserHandler)
 	router.PATCH("/admin/api/user", patchApiUserHandler)
 	// User id

@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"github.com/kabukky/journey/structure"
 	"time"
+	"log"
+	"strconv"
 )
 
 const stmtRetrievePostsCount = "SELECT count(*) FROM posts WHERE page = 0 AND status = 'published'"
@@ -12,11 +14,13 @@ const stmtRetrievePostsCountByUser = "SELECT count(*) FROM posts WHERE page = 0 
 const stmtRetrievePostsCountByTag = "SELECT count(*) FROM posts, posts_tags WHERE posts_tags.post_id = posts.id AND posts_tags.tag_id = ? AND page = 0 AND status = 'published'"
 const stmtRetrievePostsForIndex = "SELECT id, uuid, title, slug, markdown, html, featured, page, status, image, author_id, published_at FROM posts WHERE page = 0 AND status = 'published' ORDER BY published_at DESC LIMIT ? OFFSET ?"
 const stmtRetrievePostsForApi = "SELECT id, uuid, title, slug, markdown, html, featured, page, status, image, author_id, published_at FROM posts ORDER BY id DESC LIMIT ? OFFSET ?"
+const stmtRetrievePostsForApiByAuthor = "SELECT id, uuid, title, slug, markdown, html, featured, page, status, image, author_id, published_at FROM posts WHERE author_id = ? ORDER BY id DESC LIMIT ? OFFSET ?"
 const stmtRetrievePostsByUser = "SELECT id, uuid, title, slug, markdown, html, featured, page, status, image, author_id, published_at FROM posts WHERE page = 0 AND status = 'published' AND author_id = ? ORDER BY published_at DESC LIMIT ? OFFSET ?"
 const stmtRetrievePostsByTag = "SELECT posts.id, posts.uuid, posts.title, posts.slug, posts.markdown, posts.html, posts.featured, posts.page, posts.status, posts.image, posts.author_id, posts.published_at FROM posts, posts_tags WHERE posts_tags.post_id = posts.id AND posts_tags.tag_id = ? AND page = 0 AND status = 'published' ORDER BY posts.published_at DESC LIMIT ? OFFSET ?"
 const stmtRetrievePostById = "SELECT id, uuid, title, slug, markdown, html, featured, page, status, image, author_id, published_at FROM posts WHERE id = ?"
 const stmtRetrievePostBySlug = "SELECT id, uuid, title, slug, markdown, html, featured, page, status, image, author_id, published_at FROM posts WHERE slug = ?"
 const stmtRetrieveUserById = "SELECT id, name, slug, email, image, cover, bio, website, location FROM users WHERE id = ?"
+const stmtRetrieveUsers = "SELECT id, name, slug, email, image, cover, bio, website, location FROM users"
 const stmtRetrieveUserBySlug = "SELECT id, name, slug, email, image, cover, bio, website, location FROM users WHERE slug = ?"
 const stmtRetrieveUserByName = "SELECT id, name, slug, email, image, cover, bio, website, location FROM users WHERE name = ?"
 const stmtRetrieveTags = "SELECT tag_id FROM posts_tags WHERE post_id = ?"
@@ -27,6 +31,7 @@ const stmtRetrieveHashedPasswordByName = "SELECT password FROM users WHERE name 
 const stmtRetrieveUsersCount = "SELECT count(*) FROM users"
 const stmtRetrieveBlog = "SELECT value FROM settings WHERE key = ?"
 const stmtRetrievePostCreationDateById = "SELECT created_at FROM posts WHERE id = ?"
+const stmtRetrieveUserRoleById = "SELECT role_id FROM roles_users WHERE user_id = ?"
 
 func RetrievePostById(id int64) (*structure.Post, error) {
 	// Retrieve post
@@ -96,6 +101,21 @@ func RetrievePostsForApi(limit int64, offset int64) ([]structure.Post, error) {
 	return *posts, nil
 }
 
+func RetrievePostsForApiByAuthor(author_id int64, limit int64, offset int64) ([]structure.Post, error) {
+	// Retrieve posts
+	log.Print(strconv.FormatInt(author_id, 10))
+	rows, err := readDB.Query(stmtRetrievePostsForApiByAuthor, author_id, limit, offset)
+	defer rows.Close()
+	if err != nil {
+		return nil, err
+	}
+	posts, err := extractPosts(rows)
+	if err != nil {
+		return nil, err
+	}
+	return *posts, nil
+}
+
 func extractPosts(rows *sql.Rows) (*[]structure.Post, error) {
 	posts := make([]structure.Post, 0)
 	for rows.Next() {
@@ -119,16 +139,19 @@ func extractPosts(rows *sql.Rows) (*[]structure.Post, error) {
 		} else {
 			post.IsPublished = false
 		}
+		log.Print("5")
 		// Retrieve user
 		post.Author, err = RetrieveUser(userId)
 		if err != nil {
 			return nil, err
 		}
+		log.Print("6")
 		// Retrieve tags
 		post.Tags, err = RetrieveTags(post.Id)
 		if err != nil {
 			return nil, err
 		}
+		log.Print("7")
 		posts = append(posts, post)
 	}
 	return &posts, nil
@@ -223,6 +246,33 @@ func RetrieveUser(id int64) (*structure.User, error) {
 	return &user, nil
 }
 
+func extractUsers(rows *sql.Rows) (*[]structure.User, error) {
+	users := make([]structure.User, 0)
+	for rows.Next() {
+		user := structure.User{}
+		err := rows.Scan(&user.Id, &user.Name, &user.Slug, &user.Email, &user.Image, &user.Cover, &user.Bio, &user.Website, &user.Location)
+		if err != nil {
+			return nil, err
+		}
+		users = append(users, user)
+	}
+	return &users, nil
+}
+
+func RetrieveUsers() ([]structure.User, error) {
+	// Retrieve users
+	rows, err := readDB.Query(stmtRetrieveUsers)
+	defer rows.Close()
+	if err != nil {
+		return nil, err
+	}
+	posts, err := extractUsers(rows)
+	if err != nil {
+		return nil, err
+	}
+	return *posts, nil
+}
+
 func RetrieveUserBySlug(slug string) (*structure.User, error) {
 	user := structure.User{}
 	// Retrieve user
@@ -239,6 +289,12 @@ func RetrieveUserByName(name []byte) (*structure.User, error) {
 	// Retrieve user
 	row := readDB.QueryRow(stmtRetrieveUserByName, name)
 	err := row.Scan(&user.Id, &user.Name, &user.Slug, &user.Email, &user.Image, &user.Cover, &user.Bio, &user.Website, &user.Location)
+	if err != nil {
+		return nil, err
+	}
+
+	row = readDB.QueryRow(stmtRetrieveUserRoleById, user.Id)
+	err = row.Scan(&user.Role)
 	if err != nil {
 		return nil, err
 	}
