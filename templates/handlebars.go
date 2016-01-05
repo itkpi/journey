@@ -2,12 +2,12 @@ package templates
 
 import (
 	"bytes"
-	"github.com/kabukky/journey/conversion"
-	"github.com/kabukky/journey/database"
-	"github.com/kabukky/journey/filenames"
-	"github.com/kabukky/journey/plugins"
-	"github.com/kabukky/journey/structure"
-	"github.com/kabukky/journey/structure/methods"
+	"github.com/itkpi/journey/conversion"
+	"github.com/itkpi/journey/database"
+	"github.com/itkpi/journey/filenames"
+	"github.com/itkpi/journey/plugins"
+	"github.com/itkpi/journey/structure"
+	"github.com/itkpi/journey/structure/methods"
 	"html"
 	"log"
 	"net/url"

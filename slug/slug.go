@@ -1,7 +1,7 @@
 package slug
 
 import (
-	"github.com/kabukky/journey/database"
+	"github.com/itkpi/journey/database"
 	"strconv"
 	"strings"
 	"unicode"

@@ -1,8 +1,8 @@
 package plugins
 
 import (
-	"github.com/kabukky/journey/structure"
-	"github.com/kabukky/journey/structure/methods"
+	"github.com/itkpi/journey/structure"
+	"github.com/itkpi/journey/structure/methods"
 	"github.com/yuin/gopher-lua"
 )
 
