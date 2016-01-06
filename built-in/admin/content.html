@@ -31,7 +31,7 @@
 				<p>{{post.Markdown | limitTo: 400}}{{post.Markdown.length > 400 ? '...' : ''}}</p>
 				</td>
 				<td class="post-remove-cell">
-					<a class="text-danger" id="post-cover-delete" ng-click="deletePost(post.Id, post.Title)" ng-if="post.AuthorId == shared.user.Id"><h5><span class="glyphicon glyphicon-remove" aria-hidden="true"></span> Delete</h5></a>
+					<a class="text-danger" id="post-cover-delete" ng-click="deletePost(post.Id, post.Title)" ng-if="post.AuthorId == shared.user.Id || shared.user.Role == 4"><h5><span class="glyphicon glyphicon-remove" aria-hidden="true"></span> Delete</h5></a>
 				</td>
 			</tr>
 		</tbody>
