@@ -3,6 +3,9 @@
 //register the modules
 var adminApp = angular.module('adminApp', ['ngRoute', 'frapontillo.bootstrap-switch', 'ui.bootstrap', 'infinite-scroll']);
 
+//create markdown converter
+var converter = new showdown.Converter({extensions: ['youtube']});
+
 adminApp.config(function($routeProvider) {
   $routeProvider.
     when('/', {
@@ -248,14 +251,14 @@ adminApp.controller('UsersCtrl', function ($scope, $http, $timeout, $sce, $locat
 
 
 adminApp.controller('CreateCtrl', function ($scope, $http, $sce, $location, sharingService){
-  //create markdown converter
-  var converter = new Showdown.converter();
   //change the navbar according to controller
   $scope.navbarHtml = $sce.trustAsHtml('<ul class="nav navbar-nav"><li><a href="#/">Content</a></li><li class="active"><a href="#/create/">New Post<span class="sr-only">(current)</span></a></li><li><a href="#/settings/">Settings</a></li><li><a href="#/users/">Users</a></li><li><a href="logout/" class="logout">Log Out</a></li></ul>');
   $scope.shared = sharingService.shared;
-  $scope.shared.post = {Title: 'New Post', Slug: '', Markdown: 'Write something!', IsPublished: false, Image: '', Tags: ''}
+  $scope.shared.post = {Title: 'New Post', Slug: '', Markdown: 'Write something!', Html: '...', IsPublished: false, Image: '', Tags: ''}
   $scope.change = function() {
-    document.getElementById('html-div').innerHTML = '<h1>' + $scope.shared.post.Title + '</h1><br>' + converter.makeHtml($scope.shared.post.Markdown);
+    var converted = converter.makeHtml($scope.shared.post.Markdown);
+    document.getElementById('html-div').innerHTML = '<h1>' + $scope.shared.post.Title + '</h1><br>' + converted;
+    $scope.shared.post.Html = converted;
     //resize the markdown textarea
     $('.textarea-autosize').val($scope.shared.post.Markdown).trigger('autosize.resize');
   };
@@ -268,14 +271,14 @@ adminApp.controller('CreateCtrl', function ($scope, $http, $sce, $location, shar
 });
 
 adminApp.controller('EditCtrl', function ($scope, $routeParams, $http, $sce, $location, sharingService){
-  //create markdown converter
-  var converter = new Showdown.converter();
   //change the navbar according to controller
   $scope.navbarHtml = $sce.trustAsHtml('<ul class="nav navbar-nav"><li><a href="#/">Content</a></li><li><a href="#/create/">New Post</a></li><li><a href="#/settings/">Settings</a></li><li><a href="#/users/">Users</a></li><li><a href="logout/" class="logout">Log Out</a></li></ul>');
   $scope.shared = sharingService.shared;
   $scope.shared.post = {}
   $scope.change = function() {
-    document.getElementById('html-div').innerHTML = '<h1>' + $scope.shared.post.Title + '</h1><br>' + converter.makeHtml($scope.shared.post.Markdown);
+    var converted = converter.makeHtml($scope.shared.post.Markdown);
+    document.getElementById('html-div').innerHTML = '<h1>' + $scope.shared.post.Title + '</h1><br>' + converted;
+    $scope.shared.post.Html = converted;
     //resize the markdown textarea
     $('.textarea-autosize').val($scope.shared.post.Markdown).trigger('autosize.resize');
   };
