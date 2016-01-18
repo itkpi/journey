@@ -1,0 +1,12 @@
+containers:
+  journey:
+    setup:
+    - !Ubuntu trusty
+    - !UbuntuUniverse
+    - !AptTrust keys: [93763AC528C8C52568951BE0D5495F657635B973]
+    - !UbuntuPPA ubuntu-lxc/lxd-stable
+    - !Install [ca-certificates, git, golang, gcc, build-essential]
+    - !Sh |
+        GOPATH=/opt go get github.com/itkpi/journey
+        cd /opt/src/github.com/itkpi/journey/
+        GOPATH=/opt go build
