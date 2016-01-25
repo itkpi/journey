@@ -2,7 +2,7 @@
 TODO.txt
 
 # Built binary
-journey
+bin/journey
 
 # Log file
 log.txt
@@ -90,3 +90,7 @@ Temporary Items
 config.json
 
 .vagga
+src/github.com/
+src/golang.org/
+src/gopkg.in/
+/journey

@@ -1,3 +1,3 @@
-[submodule "content/themes/promenade"]
-	path = content/themes/promenade
-	url = https://github.com/kabukky/promenade
+[submodule "content/themes/itkpi-theme"]
+	path = content/themes/itkpi-theme
+	url = https://github.com/itkpi/itkpi-blog-theme.git
