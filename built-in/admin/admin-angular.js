@@ -3,6 +3,25 @@
 //register the modules
 var adminApp = angular.module('adminApp', ['ngRoute', 'frapontillo.bootstrap-switch', 'ui.bootstrap', 'infinite-scroll']);
 
+// // Conditional loader to make the extension compatible with Node
+// if (typeof require === 'function') {
+//   showdown = require('showdown');
+// }
+
+// showdown.extension('showdown-extension-boilerplate', function() {
+//   'use strict';
+
+//   return {
+//     type: 'lang', //or output
+//     regex: /(foo)/g,
+//     replace: function (match, prefix, content) {
+//       return '123 ' + content + ' 123';
+//     }
+//   };
+// });
+
+
+
 //create markdown converter
 var converter = new showdown.Converter({extensions: ['youtube']});
 

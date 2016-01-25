@@ -139,19 +139,16 @@ func extractPosts(rows *sql.Rows) (*[]structure.Post, error) {
 		} else {
 			post.IsPublished = false
 		}
-		log.Print("5")
 		// Retrieve user
 		post.Author, err = RetrieveUser(userId)
 		if err != nil {
 			return nil, err
 		}
-		log.Print("6")
 		// Retrieve tags
 		post.Tags, err = RetrieveTags(post.Id)
 		if err != nil {
 			return nil, err
 		}
-		log.Print("7")
 		posts = append(posts, post)
 	}
 	return &posts, nil
