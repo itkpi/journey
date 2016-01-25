@@ -1,23 +1,19 @@
 containers:
-  journey:
-    setup:
-    - !Ubuntu trusty
-    - !UbuntuUniverse
-    - !AptTrust keys: [93763AC528C8C52568951BE0D5495F657635B973]
-    - !UbuntuPPA ubuntu-lxc/lxd-stable
-    - !Install [ca-certificates, git, golang, gcc, build-essential, wget, tar]
-    - !Sh |
-        GOPATH=/opt go get journey
-        GOPATH=/opt go build journey
   journeydev:
     setup:
     - !Ubuntu trusty
     - !UbuntuUniverse
     - !Install [ca-certificates, git, gcc, build-essential, wget, tar]
     - !Sh |
-        wget https://storage.googleapis.com/golang/go1.5.linux-amd64.tar.gz
+        wget -nc https://storage.googleapis.com/golang/go1.5.linux-amd64.tar.gz
         tar -C /usr/local -xzf go1.5.linux-amd64.tar.gz
         ln -s /usr/local/go/bin/* /usr/bin/
+  journey:
+    setup:
+    - !Container journeydev
+    - !Sh |
+        GOPATH=/work go get journey
+        GOPATH=/work go build journey
 
 commands:
   journey-dev: !Command
