@@ -20,8 +20,8 @@ content/images/*
 
 # Themes
 content/themes/*
+!content/themes/itkpi-theme
 !content/themes/README.md
-!content/themes/promenade/*
 
 # Https certs
 content/https/*
