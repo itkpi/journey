@@ -495,7 +495,11 @@ func imageFunc(helper *structure.Helper, values *structure.RequestData) []byte {
 		return evaluateEscape(values.Posts[values.CurrentPostIndex].Image, helper.Unescaped)
 	} else if values.CurrentHelperContext == 3 { // author
 		// TODO: Error handling if there is no Posts[values.CurrentPostIndex]
-		return evaluateEscape(values.User.Image, helper.Unescaped)
+		if values.User != nil {
+			return evaluateEscape(values.Posts[values.CurrentPostIndex].Author.Image, helper.Unescaped)
+		} else {
+			return evaluateEscape(values.User.Image, helper.Unescaped)
+		}
 	}
 	return []byte{}
 }
