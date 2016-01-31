@@ -34,9 +34,14 @@
 				<td class="user-number-cell">
 					{{ user.Name }}
 				</td>
-				<td>
-					<a href='/admin/api/user/{{user.Id}}/resetPassword'>Reset password</a> | 
-					<a href='/admin/api/user/{{user.Id}}/remove'>Remove user</a>
+				<td width="60%">
+					<div>
+						<input ng-model="collapse[user.Id]" type="checkbox"> <span style="color:red">DANGER ZONE</span>
+						<div ng-show="collapse[user.Id]">
+							<a href='/admin/api/user/{{user.Id}}/resetPassword'>Reset password</a> | 
+							<a href='/admin/api/user/{{user.Id}}/remove'>Remove user</a>
+						</div>
+					</div>
 				</td>
 			</tr>
 		</tbody>
