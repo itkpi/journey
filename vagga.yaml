@@ -16,7 +16,7 @@ containers:
         GOPATH=/work go build journey
 
 commands:
-  journey-dev: !Command
+  run: !Command
     container: journeydev
     run: |
         GOPATH=/work go get journey

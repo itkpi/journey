@@ -218,6 +218,7 @@ adminApp.controller('UsersCtrl', function ($scope, $http, $timeout, $sce, $locat
   $scope.shared = sharingService.shared;
   //variable to hold the field prefix
   $scope.prefix = '';
+
   $scope.loadData = function() {
     $http.get('/admin/api/userid').success(function(data) {
       $scope.authenticatedUser = data;

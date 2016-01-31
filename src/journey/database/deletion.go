@@ -2,6 +2,7 @@ package database
 
 const stmtDeletePostTagsByPostId = "DELETE FROM posts_tags WHERE post_id = ?"
 const stmtDeletePostById = "DELETE FROM posts WHERE id = ?"
+const stmtDeleteUserById = "DELETE FROM users WHERE id = ?"
 
 func DeletePostTagsForPostId(post_id int64) error {
 	writeDB, err := readDB.Begin()
@@ -24,6 +25,20 @@ func DeletePostById(id int64) error {
 		return err
 	}
 	_, err = writeDB.Exec(stmtDeletePostById, id)
+	if err != nil {
+		writeDB.Rollback()
+		return err
+	}
+	return writeDB.Commit()
+}
+
+func DeleteUserById(id int64) error {
+	writeDB, err := readDB.Begin()
+	if err != nil {
+		writeDB.Rollback()
+		return err
+	}
+	_, err = writeDB.Exec(stmtDeleteUserById, id)
 	if err != nil {
 		writeDB.Rollback()
 		return err

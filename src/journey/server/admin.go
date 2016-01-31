@@ -703,6 +703,83 @@ func getApiUserHandler(w http.ResponseWriter, r *http.Request, params map[string
 	}
 }
 
+func getApiUserResetHandler(w http.ResponseWriter, r *http.Request, params map[string]string) {
+	userName := authentication.GetUserName(r)
+	if userName != "" {
+		currentId, err := getUserId(userName)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		userRole, err := getUserRole(userName)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		log.Print("Role is " + strconv.Itoa(userRole))
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		} else if (userRole != 4 && userRole != 1) { // Only owner and admin can do it
+			http.Error(w, "You don't have permission to access this data.", http.StatusForbidden)
+			return
+		}
+		
+		id, _ := strconv.ParseInt(params["id"], 10, 64)
+		encryptedPassword, err := authentication.EncryptPassword("VerySecretPassword")
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		err = database.UpdateUserPassword(id, encryptedPassword, time.Now(), currentId)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "text/html")
+		w.Write([]byte("Changed"))
+		return
+	} else {
+		http.Error(w, "Not logged in!", http.StatusInternalServerError)
+		return
+	}
+}
+
+func getApiUserRemoveHandler(w http.ResponseWriter, r *http.Request, params map[string]string) {
+	userName := authentication.GetUserName(r)
+	if userName != "" {
+		userRole, err := getUserRole(userName)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		log.Print("Role is " + strconv.Itoa(userRole))
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		} else if (userRole != 4 && userRole != 1) { // Only owner and admin can do it
+			http.Error(w, "You don't have permission to access this data.", http.StatusForbidden)
+			return
+		}
+		
+		id, _ := strconv.ParseInt(params["id"], 10, 64)
+		err = database.DeleteUserById(id)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "text/html")
+		w.Write([]byte("User Removed"))
+		return
+	} else {
+		http.Error(w, "Not logged in!", http.StatusInternalServerError)
+		return
+	}
+}
+
+
 //TODO: return list of users
 func getApiUsersHandler(w http.ResponseWriter, r *http.Request, params map[string]string) {
 	userName := authentication.GetUserName(r)
@@ -979,6 +1056,8 @@ func InitializeAdmin(router *httptreemux.TreeMux) {
 	// User
 	router.GET("/admin/api/users", getApiUsersHandler)
 	router.GET("/admin/api/user/:id", getApiUserHandler)
+	router.GET("/admin/api/user/:id/resetPassword", getApiUserResetHandler)
+	router.GET("/admin/api/user/:id/remove", getApiUserRemoveHandler)
 	router.PATCH("/admin/api/user", patchApiUserHandler)
 	// User id
 	router.GET("/admin/api/userid", getApiUserIdHandler)
