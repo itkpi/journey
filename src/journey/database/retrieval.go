@@ -23,6 +23,7 @@ const stmtRetrieveUserById = "SELECT id, name, slug, email, image, cover, bio, w
 const stmtRetrieveUsers = "SELECT id, name, slug, email, image, cover, bio, website, location FROM users"
 const stmtRetrieveUserBySlug = "SELECT id, name, slug, email, image, cover, bio, website, location FROM users WHERE slug = ?"
 const stmtRetrieveUserByName = "SELECT id, name, slug, email, image, cover, bio, website, location FROM users WHERE name = ?"
+const stmtRetrieveAuthors = "SELECT user_id FROM posts_authors WHERE post_id = ?"
 const stmtRetrieveTags = "SELECT tag_id FROM posts_tags WHERE post_id = ?"
 const stmtRetrieveTagById = "SELECT id, name, slug FROM tags WHERE id = ?"
 const stmtRetrieveTagBySlug = "SELECT id, name, slug FROM tags WHERE slug = ?"
@@ -296,6 +297,29 @@ func RetrieveUserByName(name []byte) (*structure.User, error) {
 		return nil, err
 	}
 	return &user, nil
+}
+
+func RetrieveAuthors(postId int64) ([]structure.User, error) {
+	authors := make([]structure.User, 0)
+	// Retrieve tags
+	rows, err := readDB.Query(stmtRetrieveTags, postId)
+	defer rows.Close()
+	if err != nil {
+		return nil, err
+	}
+	for rows.Next() {
+		var userId int64
+		err := rows.Scan(&userId)
+		if err != nil {
+			return nil, err
+		}
+		user, err := RetrieveUser(userId)
+		// TODO: Error while receiving individual user is ignored right now. Keep it this way?
+		if err == nil {
+			authors = append(authors, *user)
+		}
+	}
+	return authors, nil
 }
 
 func RetrieveTags(postId int64) ([]structure.Tag, error) {

@@ -83,6 +83,12 @@ var stmtInitialization = `CREATE TABLE IF NOT EXISTS
 		tag_id	integer NOT NULL
 	);
 	CREATE TABLE IF NOT EXISTS
+	posts_authors (
+		id		integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+		post_id	integer NOT NULL,
+		user_id	integer NOT NULL
+	);
+	CREATE TABLE IF NOT EXISTS
 	settings (
 		id			integer NOT NULL PRIMARY KEY AUTOINCREMENT,
 		uuid		varchar(36) NOT NULL,

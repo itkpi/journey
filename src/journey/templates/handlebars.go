@@ -115,7 +115,13 @@ func paginationDotTotalFunc(helper *structure.Helper, values *structure.RequestD
 	if values.CurrentTemplate == 0 { // index
 		return []byte(strconv.FormatInt(values.Blog.PostCount, 10))
 	} else if values.CurrentTemplate == 3 { // author
-		count, err := database.RetrieveNumberOfPostsByUser(values.Posts[values.CurrentPostIndex].Author.Id)
+		var count int64
+		var err error
+		if values.User != nil {
+			count, err = database.RetrieveNumberOfPostsByUser(values.User.Id)
+		} else {
+			count, err = database.RetrieveNumberOfPostsByUser(values.Posts[values.CurrentPostIndex].Author.Id)
+		}
 		if err != nil {
 			log.Println("Couldn't get number of posts", err.Error())
 			return []byte{}
@@ -179,7 +185,11 @@ func nextFunc(helper *structure.Helper, values *structure.RequestData) []byte {
 			return []byte{}
 		}
 	} else if values.CurrentTemplate == 3 { // author
-		count, err = database.RetrieveNumberOfPostsByUser(values.Posts[values.CurrentPostIndex].Author.Id)
+		if values.User != nil {
+			count, err = database.RetrieveNumberOfPostsByUser(values.User.Id)
+		} else {
+			count, err = database.RetrieveNumberOfPostsByUser(values.Posts[values.CurrentPostIndex].Author.Id)
+		}
 		if err != nil {
 			log.Println("Couldn't get number of posts for author", err.Error())
 			return []byte{}
@@ -208,7 +218,11 @@ func pagesFunc(helper *structure.Helper, values *structure.RequestData) []byte {
 			return []byte{}
 		}
 	} else if values.CurrentTemplate == 3 { // author
-		count, err = database.RetrieveNumberOfPostsByUser(values.Posts[values.CurrentPostIndex].Author.Id)
+		if values.User != nil {
+			count, err = database.RetrieveNumberOfPostsByUser(values.User.Id)
+		} else {
+			count, err = database.RetrieveNumberOfPostsByUser(values.Posts[values.CurrentPostIndex].Author.Id)
+		}
 		if err != nil {
 			log.Println("Couldn't get number of posts for author", err.Error())
 			return []byte{}
@@ -332,7 +346,11 @@ func body_classFunc(helper *structure.Helper, values *structure.RequestData) []b
 		var buffer bytes.Buffer
 		buffer.WriteString("author-template author-")
 		// TODO: Error handling if there is no Posts[values.CurrentPostIndex]
-		buffer.WriteString(values.Posts[values.CurrentPostIndex].Author.Slug)
+		if values.User != nil {
+			buffer.WriteString(values.User.Slug)
+		} else {
+			buffer.WriteString(values.Posts[values.CurrentPostIndex].Author.Slug)
+		}
 		if values.CurrentIndexPage > 1 {
 			buffer.WriteString(" paged archive-template")
 		}
@@ -366,7 +384,11 @@ func meta_titleFunc(helper *structure.Helper, values *structure.RequestData) []b
 	} else if values.CurrentTemplate == 3 { // author
 		var buffer bytes.Buffer
 		// TODO: Error handling if there is no Posts[values.CurrentPostIndex]
-		buffer.Write(values.Posts[values.CurrentPostIndex].Author.Name)
+		if values.User != nil {
+			buffer.Write(values.User.Name)
+		} else {
+			buffer.Write(values.Posts[values.CurrentPostIndex].Author.Name)
+		}
 		buffer.WriteString(" - ")
 		buffer.Write(values.Blog.Title)
 		return evaluateEscape(buffer.Bytes(), helper.Unescaped)
@@ -442,17 +464,29 @@ func authorDotNameFunc(helper *structure.Helper, values *structure.RequestData) 
 
 func bioFunc(helper *structure.Helper, values *structure.RequestData) []byte {
 	// TODO: Error handling if there is no Posts[values.CurrentPostIndex]
-	return evaluateEscape(values.Posts[values.CurrentPostIndex].Author.Bio, helper.Unescaped)
+	if values.User != nil {
+		return evaluateEscape(values.User.Bio, helper.Unescaped)
+	} else {
+		return evaluateEscape(values.Posts[values.CurrentPostIndex].Author.Bio, helper.Unescaped)
+	}
 }
 
 func emailFunc(helper *structure.Helper, values *structure.RequestData) []byte {
 	// TODO: Error handling if there is no Posts[values.CurrentPostIndex]
-	return evaluateEscape(values.Posts[values.CurrentPostIndex].Author.Email, helper.Unescaped)
+	if values.User != nil {
+		return evaluateEscape(values.User.Email, helper.Unescaped)
+	} else {
+		return evaluateEscape(values.Posts[values.CurrentPostIndex].Author.Email, helper.Unescaped)
+	}
 }
 
 func websiteFunc(helper *structure.Helper, values *structure.RequestData) []byte {
 	// TODO: Error handling if there is no Posts[values.CurrentPostIndex]
-	return evaluateEscape(values.Posts[values.CurrentPostIndex].Author.Website, helper.Unescaped)
+	if values.User != nil {
+		return evaluateEscape(values.User.Website, helper.Unescaped)
+	} else {
+		return evaluateEscape(values.Posts[values.CurrentPostIndex].Author.Website, helper.Unescaped)
+	}
 }
 
 func imageFunc(helper *structure.Helper, values *structure.RequestData) []byte {
@@ -461,7 +495,7 @@ func imageFunc(helper *structure.Helper, values *structure.RequestData) []byte {
 		return evaluateEscape(values.Posts[values.CurrentPostIndex].Image, helper.Unescaped)
 	} else if values.CurrentHelperContext == 3 { // author
 		// TODO: Error handling if there is no Posts[values.CurrentPostIndex]
-		return evaluateEscape(values.Posts[values.CurrentPostIndex].Author.Image, helper.Unescaped)
+		return evaluateEscape(values.User.Image, helper.Unescaped)
 	}
 	return []byte{}
 }
@@ -473,12 +507,20 @@ func authorDotImageFunc(helper *structure.Helper, values *structure.RequestData)
 
 func coverFunc(helper *structure.Helper, values *structure.RequestData) []byte {
 	// TODO: Error handling if there is no Posts[values.CurrentPostIndex]
-	return evaluateEscape(values.Posts[values.CurrentPostIndex].Author.Cover, helper.Unescaped)
+	if values.User != nil {
+		return evaluateEscape(values.User.Cover, helper.Unescaped)
+	} else {
+		return evaluateEscape(values.Posts[values.CurrentPostIndex].Author.Cover, helper.Unescaped)
+	}
 }
 
 func locationFunc(helper *structure.Helper, values *structure.RequestData) []byte {
 	// TODO: Error handling if there is no Posts[values.CurrentPostIndex]
-	return evaluateEscape(values.Posts[values.CurrentPostIndex].Author.Location, helper.Unescaped)
+	if values.User != nil {
+		return evaluateEscape(values.User.Location, helper.Unescaped)
+	} else {
+		return evaluateEscape(values.Posts[values.CurrentPostIndex].Author.Location, helper.Unescaped)
+	}
 }
 
 func postFunc(helper *structure.Helper, values *structure.RequestData) []byte {
@@ -763,7 +805,11 @@ func nameFunc(helper *structure.Helper, values *structure.RequestData) []byte {
 	//buffer.WriteString("</a>")
 	//return buffer.Bytes()
 	//TODO: Error handling if there is no Posts[values.CurrentPostIndex]
-	return evaluateEscape(values.Posts[values.CurrentPostIndex].Author.Name, helper.Unescaped)
+	if values.User != nil {
+		return evaluateEscape(values.User.Name, helper.Unescaped)
+	} else {
+		return evaluateEscape(values.Posts[values.CurrentPostIndex].Author.Name, helper.Unescaped)
+	}
 }
 
 func tagDotNameFunc(helper *structure.Helper, values *structure.RequestData) []byte {

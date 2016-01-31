@@ -71,7 +71,7 @@ func ShowAuthorTemplate(writer http.ResponseWriter, r *http.Request, slug string
 	if err != nil {
 		return err
 	}
-	requestData := structure.RequestData{Posts: posts, Blog: methods.Blog, CurrentIndexPage: page, CurrentTemplate: 3, CurrentPath: r.URL.Path} // CurrentTemplate = author
+	requestData := structure.RequestData{User: author, Posts: posts, Blog: methods.Blog, CurrentIndexPage: page, CurrentTemplate: 3, CurrentPath: r.URL.Path} // CurrentTemplate = author
 	if template, ok := compiledTemplates.m["author"]; ok {
 		_, err = writer.Write(executeHelper(template, &requestData, 0)) // context = index
 	} else {
