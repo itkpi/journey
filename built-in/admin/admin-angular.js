@@ -389,15 +389,15 @@ adminApp.controller('PostOptionsModalInstanceCtrl', function ($scope, $http, $mo
   $scope.shared.new_post_authors = $scope.shared.post_authors.slice();
   $scope.ok = function () {
     $log.debug('Saving post #' + $scope.shared.post.Id + ' options');
-    $scope.shared.post_authors.every(function(element, index, array) {
-      if (!$scope.shared.new_post_authors.includes(element)) {
-        change_authors_to.delete.append(element);
-      }
+    $scope.shared.post_authors.filter(function(element, index, array) {
+      return !$scope.shared.new_post_authors.includes(element);
+    }).every(function(element, index, array) {
+      change_authors_to.delete.append(element);
     });
-    $scope.shared.new_post_authors.every(function(element, index, array) {
-      if (!$scope.shared.post_authors.includes(element)) {
-        change_authors_to.add.append(element);
-      }
+    $scope.shared.new_post_authors.filter(function(element, index, array) {
+      return !$scope.shared.post_authors.includes(element);
+    }).every(function(element, index, array) {
+      change_authors_to.add.append(element);
     });
     $http.put('/admin/api/post/' + $scope.shared.post.Id + '/authors', change_authors_to).success(function(data) {
       $scope.shared.post_authors = $scope.shared.new_post_authors.slice();
