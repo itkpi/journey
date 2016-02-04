@@ -39,9 +39,9 @@ type JsonPost struct {
 	AuthorName  string
 }
 
-type JsonPostAuthors struct {
+type JsonChangePostAuthors struct {
 	delete      []int64
-	add    		[]int64
+	add         []int64
 }
 
 type JsonBlog struct {
@@ -78,6 +78,8 @@ type JsonUserId struct {
 type JsonImage struct {
 	Filename string
 }
+
+type JsonPostAuthors []JsonUser
 
 // Function to serve the login page
 func getLoginHandler(w http.ResponseWriter, r *http.Request, _ map[string]string) {
@@ -434,6 +436,37 @@ func deleteApiPostHandler(w http.ResponseWriter, r *http.Request, params map[str
 	}
 }
 
+func getApiPostAuthorsHandler(w http.ResponseWriter,
+							   r *http.Request,
+							   params map[string]string) {
+	userName := authentication.GetUserName(r)
+	if userName != "" {
+		post_id := params["id"]
+		postId, err := strconv.ParseInt(post_id, 10, 64)
+		if err != nil || postId < 1 {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		var authors []structure.User
+		authors, err = database.RetrieveAuthors(postId)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		json, err := json.Marshal(usersToJson(authors))
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(json)
+		return
+	} else {
+		http.Error(w, "Not logged in!", http.StatusInternalServerError)
+		return
+	}
+}
+
 // API function to add and remove post authors
 func putApiPostAuthorsHandler(w http.ResponseWriter,
 							   r *http.Request,
@@ -468,7 +501,7 @@ func putApiPostAuthorsHandler(w http.ResponseWriter,
 			return
 		}
 		decoder := json.NewDecoder(r.Body)
-		var json JsonPostAuthors
+		var json JsonChangePostAuthors
 		err = decoder.Decode(&json)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -1129,7 +1162,8 @@ func InitializeAdmin(router *httptreemux.TreeMux) {
 	router.POST("/admin/api/post", postApiPostHandler)
 	router.PATCH("/admin/api/post", patchApiPostHandler)
 	router.DELETE("/admin/api/post/:id", deleteApiPostHandler)
-	// Put authors
+	// Edit authors
+	router.GET("/admin/api/post/:id/authors", getApiPostAuthorsHandler)
 	router.PUT("/admin/api/post/:id/authors", putApiPostAuthorsHandler)
 	// Upload
 	router.POST("/admin/api/upload", apiUploadHandler)

@@ -57,6 +57,7 @@ adminApp.factory('sharingService', function(){
   return {
     shared: {
       post: {},
+      post_authors: [],
       blog: {},
       user: {},
       users: [],
@@ -295,6 +296,7 @@ adminApp.controller('EditCtrl', function ($scope, $routeParams, $http, $sce, $lo
   $scope.navbarHtml = $sce.trustAsHtml('<ul class="nav navbar-nav"><li><a href="#/">Content</a></li><li><a href="#/create/">New Post</a></li><li><a href="#/settings/">Settings</a></li><li><a href="#/users/">Users</a></li><li><a href="logout/" class="logout">Log Out</a></li></ul>');
   $scope.shared = sharingService.shared;
   $scope.shared.post = {}
+  $scope.shared.post_authors = []
   $scope.change = function() {
     var converted = converter.makeHtml($scope.shared.post.Markdown);
     document.getElementById('html-div').innerHTML = '<h1>' + $scope.shared.post.Title + '</h1><br>' + converted;
@@ -305,6 +307,9 @@ adminApp.controller('EditCtrl', function ($scope, $routeParams, $http, $sce, $lo
   $http.get('/admin/api/post/' + $routeParams.Id).success(function(data) {
     $scope.shared.post = data;
     $scope.change();
+  });
+  $http.get('/admin/api/post/' + $routeParams.Id + '/authors').success(function(data) {
+    $scope.shared.post_authors = data;
   });
   $scope.save = function() {
     $http.patch('/admin/api/post', $scope.shared.post).success(function(data) {
@@ -323,7 +328,7 @@ adminApp.controller('EmptyModalCtrl', function ($scope, $modal, $http, sharingSe
     if (callingFrom == 'post-options') {
       var modalInstance = $modal.open({
         templateUrl: 'post-options-modal.tpl',
-        controller: 'EmptyModalInstanceCtrl',
+        controller: 'PostOptionsModalInstanceCtrl',
         size: size
       });
     } else if (callingFrom == 'post-help') {
@@ -376,6 +381,31 @@ adminApp.controller('ImageModalCtrl', function ($scope, $modal, $http, sharingSe
         $scope.shared.user.Cover = $scope.selected;
       }
     });
+  };
+});
+
+adminApp.controller('PostOptionsModalInstanceCtrl', function ($scope, $http, $modalInstance, $log, sharingService) {
+  $scope.shared = sharingService.shared;
+  $scope.shared.new_post_authors = $scope.shared.post_authors.slice();
+  $scope.ok = function () {
+    $log.debug('Saving post #' + $scope.shared.post.Id + ' options');
+    $scope.shared.post_authors.every(function(element, index, array) {
+      if (!$scope.shared.new_post_authors.includes(element)) {
+        change_authors_to.delete.append(element);
+      }
+    });
+    $scope.shared.new_post_authors.every(function(element, index, array) {
+      if (!$scope.shared.post_authors.includes(element)) {
+        change_authors_to.add.append(element);
+      }
+    });
+    $http.put('/admin/api/post/' + $scope.shared.post.Id + '/authors', change_authors_to).success(function(data) {
+      $scope.shared.post_authors = $scope.shared.new_post_authors.slice();
+    });
+    $modalInstance.close();
+  };
+  $scope.cancel = function () {
+    $modalInstance.dismiss('cancel');
   };
 });
 
