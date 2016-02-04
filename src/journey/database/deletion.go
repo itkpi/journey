@@ -2,7 +2,7 @@ package database
 
 const stmtDeletePostTagsByPostId = "DELETE FROM posts_tags WHERE post_id = ?"
 const stmtDeletePostById = "DELETE FROM posts WHERE id = ?"
-const stmtDeletePostAuthorById = "DELETE FROM post_authors WHERE post_id = ? AND author_id = ?"
+const stmtDeletePostAuthorById = "DELETE FROM posts_authors WHERE post_id = ? AND author_id = ?"
 const stmtDeleteUserById = "DELETE FROM users WHERE id = ?"
 
 func DeletePostTagsForPostId(post_id int64) error {
