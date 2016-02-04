@@ -12,6 +12,7 @@ const stmtInsertRoleUser = "INSERT INTO roles_users (id, role_id, user_id) VALUE
 const stmtInsertTag = "INSERT INTO tags (id, uuid, name, slug, created_at, created_by, updated_at, updated_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
 const stmtInsertPostTag = "INSERT INTO posts_tags (id, post_id, tag_id) VALUES (?, ?, ?)"
 const stmtInsertSetting = "INSERT INTO settings (id, uuid, key, value, type, created_at, created_by, updated_at, updated_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+const stmtInsertPostAuthor = "INSERT INTO post_authors (post_id, user_id) VALUES (?, ?)"
 
 func InsertPost(title []byte, slug string, markdown []byte, html []byte, featured bool, isPage bool, published bool, image []byte, created_at time.Time, created_by int64) (int64, error) {
 
@@ -129,6 +130,20 @@ func insertSettingInt64(key string, value int64, setting_type string, created_at
 		return err
 	}
 	_, err = writeDB.Exec(stmtInsertSetting, nil, uuid.Formatter(uuid.NewV4(), uuid.CleanHyphen), key, value, setting_type, created_at, created_by, created_at, created_by)
+	if err != nil {
+		writeDB.Rollback()
+		return err
+	}
+	return writeDB.Commit()
+}
+
+func InsertPostAuthor(post_id int, user_id int64) error {
+	writeDB, err := readDB.Begin()
+	if err != nil {
+		writeDB.Rollback()
+		return err
+	}
+	_, err = writeDB.Exec(stmtInsertPostAuthor, post_id, user_id)
 	if err != nil {
 		writeDB.Rollback()
 		return err

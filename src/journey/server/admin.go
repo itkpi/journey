@@ -39,6 +39,11 @@ type JsonPost struct {
 	AuthorName  string
 }
 
+type JsonPostAuthors struct {
+	delete      []int64
+	add    		[]int64
+}
+
 type JsonBlog struct {
 	Url             string
 	Title           string
@@ -429,6 +434,85 @@ func deleteApiPostHandler(w http.ResponseWriter, r *http.Request, params map[str
 	}
 }
 
+// API function to add and remove post authors
+func putApiPostAuthorsHandler(w http.ResponseWriter,
+							   r *http.Request,
+							   params map[string]string) {
+	userName := authentication.GetUserName(r)
+	if userName != "" {
+		userId, err := getUserId(userName)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		userRole, err := getUserRole(userName)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		post_id := params["id"]
+		postId, err := strconv.ParseInt(post_id, 10, 64)
+		if err != nil || postId < 1 {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		// Check the post for existence (there's no foreign key constraint)
+		post, err := database.RetrievePostById(postId)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		// Allow this action only to the main author
+		if post.Author.Id != userId && userRole != 4 {
+			http.Error(w, "Not your post", http.StatusInternalServerError)
+			return
+		}
+		decoder := json.NewDecoder(r.Body)
+		var json JsonPostAuthors
+		err = decoder.Decode(&json)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		delete_author_ids := json.delete
+		add_author_ids := json.add
+		var existing_authors []structure.User
+		existing_authors, err = database.RetrieveAuthors(postId)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		// Delete users
+		for _, author_id := range delete_author_ids {
+			err = database.DeletePostAuthor(postId, author_id)
+			// Don't even check for errors
+		}
+		// Filter out ones who is already listed as author
+		for _, author := range existing_authors {
+			author_exists := false
+			for _, author_id := range add_author_ids {
+				if author.Id == author_id {
+					author_exists := true
+					break
+				}
+			}
+			if !author_exists {
+				_, err = database.RetrieveUser(author.Id)
+				if err == nil {  // Verify that this user exists in DB
+					// and save him
+					_ = database.InsertPostAuthor(int(postId), author.Id)
+				}
+			}
+		}
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("Authors added!"))
+		return
+	} else {
+		http.Error(w, "Not logged in!", http.StatusInternalServerError)
+		return
+	}
+}
+
 // API function to upload images
 func apiUploadHandler(w http.ResponseWriter, r *http.Request, _ map[string]string) {
 	userName := authentication.GetUserName(r)
@@ -724,7 +808,7 @@ func getApiUserResetHandler(w http.ResponseWriter, r *http.Request, params map[s
 			http.Error(w, "You don't have permission to access this data.", http.StatusForbidden)
 			return
 		}
-		
+
 		id, _ := strconv.ParseInt(params["id"], 10, 64)
 		encryptedPassword, err := authentication.EncryptPassword("VerySecretPassword")
 		if err != nil {
@@ -762,7 +846,7 @@ func getApiUserRemoveHandler(w http.ResponseWriter, r *http.Request, params map[
 			http.Error(w, "You don't have permission to access this data.", http.StatusForbidden)
 			return
 		}
-		
+
 		id, _ := strconv.ParseInt(params["id"], 10, 64)
 		err = database.DeleteUserById(id)
 		if err != nil {
@@ -1045,6 +1129,8 @@ func InitializeAdmin(router *httptreemux.TreeMux) {
 	router.POST("/admin/api/post", postApiPostHandler)
 	router.PATCH("/admin/api/post", patchApiPostHandler)
 	router.DELETE("/admin/api/post/:id", deleteApiPostHandler)
+	// Put authors
+	router.PUT("/admin/api/post/:id/authors", putApiPostAuthorsHandler)
 	// Upload
 	router.POST("/admin/api/upload", apiUploadHandler)
 	// Images
