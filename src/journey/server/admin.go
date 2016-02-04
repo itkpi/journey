@@ -525,7 +525,7 @@ func putApiPostAuthorsHandler(w http.ResponseWriter,
 			author_exists := false
 			for _, author_id := range add_author_ids {
 				if author.Id == author_id {
-					author_exists := true
+					author_exists = true
 					break
 				}
 			}
