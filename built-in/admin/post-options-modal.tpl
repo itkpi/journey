@@ -37,18 +37,14 @@
             <div class="form-group">
                 <label for="post-authors" class="col-sm-2 control-label">Co-authors</label>
                 <div class="col-sm-4">
-                    <select
+                    <select multiple
                         ng-model="shared.new_post_authors"
                         name="post_authors"
                         ng-options="
                             author as author.Name
                             for author in shared.users
                             track by author.Id
-                        "
-                    multiple></select>
-                            <br>
-                    {{ shared.new_post_authors | json }}
-                    <!-- {{ shared | json }} -->
+                        "></select>
                 </div>
             </div>
         </form>
