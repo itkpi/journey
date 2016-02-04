@@ -521,19 +521,19 @@ func putApiPostAuthorsHandler(w http.ResponseWriter,
 			// Don't even check for errors
 		}
 		// Filter out ones who is already listed as author
-		for _, author := range existing_authors {
+		for _, author_id := range add_author_ids {
 			author_exists := false
-			for _, author_id := range add_author_ids {
+			for _, author := range existing_authors {
 				if author.Id == author_id {
 					author_exists = true
 					break
 				}
 			}
 			if !author_exists {
-				_, err = database.RetrieveUser(author.Id)
+				_, err = database.RetrieveUser(author_id)
 				if err == nil {  // Verify that this user exists in DB
 					// and save him
-					_ = database.InsertPostAuthor(int(postId), author.Id)
+					_ = database.InsertPostAuthor(int(postId), author_id)
 				}
 			}
 		}
