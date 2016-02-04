@@ -304,13 +304,25 @@ adminApp.controller('EditCtrl', function ($scope, $routeParams, $http, $sce, $lo
     //resize the markdown textarea
     $('.textarea-autosize').val($scope.shared.post.Markdown).trigger('autosize.resize');
   };
-  $http.get('/admin/api/post/' + $routeParams.Id).success(function(data) {
-    $scope.shared.post = data;
-    $scope.change();
-  });
-  $http.get('/admin/api/post/' + $routeParams.Id + '/authors').success(function(data) {
-    $scope.shared.post_authors = data;
-  });
+  $scope.loadData = function() {
+    $http.get('/admin/api/userid').success(function(data) {
+      $scope.authenticatedUser = data;
+      $http.get('/admin/api/user/' + $scope.authenticatedUser.Id).success(function(data) {
+        $scope.shared.user = data;
+      });
+    });
+    $http.get('/admin/api/users').success(function(data) {
+      $scope.shared.users = data;
+    });
+    $http.get('/admin/api/post/' + $routeParams.Id).success(function(data) {
+      $scope.shared.post = data;
+      $scope.change();
+    });
+    $http.get('/admin/api/post/' + $routeParams.Id + '/authors').success(function(data) {
+      $scope.shared.post_authors = data;
+    });
+  };
+  $scope.loadData();
   $scope.save = function() {
     $http.patch('/admin/api/post', $scope.shared.post).success(function(data) {
       $location.url('/');
@@ -385,19 +397,21 @@ adminApp.controller('ImageModalCtrl', function ($scope, $modal, $http, sharingSe
 });
 
 adminApp.controller('PostOptionsModalInstanceCtrl', function ($scope, $http, $modalInstance, $log, sharingService) {
+  'use strict'
   $scope.shared = sharingService.shared;
   $scope.shared.new_post_authors = $scope.shared.post_authors.slice();
+  var change_authors_to = {delete: [], add: []};
   $scope.ok = function () {
     $log.debug('Saving post #' + $scope.shared.post.Id + ' options');
     $scope.shared.post_authors.filter(function(element, index, array) {
       return !$scope.shared.new_post_authors.includes(element);
     }).every(function(element, index, array) {
-      change_authors_to.delete.append(element);
+      change_authors_to.delete.push(element.Id);
     });
     $scope.shared.new_post_authors.filter(function(element, index, array) {
       return !$scope.shared.post_authors.includes(element);
     }).every(function(element, index, array) {
-      change_authors_to.add.append(element);
+      change_authors_to.add.push(element.Id);
     });
     $http.put('/admin/api/post/' + $scope.shared.post.Id + '/authors', change_authors_to).success(function(data) {
       $scope.shared.post_authors = $scope.shared.new_post_authors.slice();
