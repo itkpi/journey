@@ -40,8 +40,8 @@ type JsonPost struct {
 }
 
 type JsonChangePostAuthors struct {
-	delete      []int64
-	add         []int64
+	Delete      []int64
+	Add         []int64
 }
 
 type JsonBlog struct {
@@ -507,8 +507,8 @@ func putApiPostAuthorsHandler(w http.ResponseWriter,
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		delete_author_ids := json.delete
-		add_author_ids := json.add
+		delete_author_ids := json.Delete
+		add_author_ids := json.Add
 		var existing_authors []structure.User
 		existing_authors, err = database.RetrieveAuthors(postId)
 		if err != nil {
