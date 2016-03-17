@@ -2,6 +2,6 @@
 	"HttpHostAndPort":":8084",
 	"HttpsHostAndPort":":8085",
 	"HttpsUsage":"None",
-	"Url":"http://blog.itkpi.pp.ua",
+	"Url":"http://itkpi.pp.ua",
 	"HttpsUrl":"https://127.0.0.1:8085"
 }
