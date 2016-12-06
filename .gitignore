@@ -95,4 +95,6 @@ src/github.com/
 src/golang.org/
 src/gopkg.in/
 *.tar.gz*
+/journey
+/godep
 _workspace
