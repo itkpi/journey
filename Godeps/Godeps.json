@@ -1,6 +1,6 @@
 {
 	"ImportPath": "github.com/itkpi/journey",
-	"GoVersion": "go1.7.4",
+	"GoVersion": "go1.7",
 	"GodepVersion": "v75",
 	"Deps": [
 		{
