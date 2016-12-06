@@ -1,7 +1,7 @@
 {
-	"HttpHostAndPort":":8084",
-	"HttpsHostAndPort":":8085",
+	"HttpHostAndPort":":5000",
+	"HttpsHostAndPort":":5001",
 	"HttpsUsage":"None",
 	"Url":"http://itkpi.pp.ua",
-	"HttpsUrl":"https://127.0.0.1:8085"
+	"HttpsUrl":"https://127.0.0.1:5000"
 }
