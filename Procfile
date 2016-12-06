@@ -1,1 +1,1 @@
-web: sh -c 'PATH="$PATH:/app/bin" journey -http-port 5000'
+web: /app/bin/journey -http-port 5000 -custom-path=/app
