@@ -1,0 +1,92 @@
+{
+	"ImportPath": "journey",
+	"GoVersion": "go1.5",
+	"GodepVersion": "v75",
+	"Deps": [
+		{
+			"ImportPath": "github.com/dimfeld/httppath",
+			"Rev": "c8e499c3ef3c3e272ed8bdcc1ccf39f73c88debc"
+		},
+		{
+			"ImportPath": "github.com/dimfeld/httptreemux",
+			"Comment": "v3.5.1",
+			"Rev": "5cb0ec25af2dd6a7d3718b5aa05dc48e192473bc"
+		},
+		{
+			"ImportPath": "github.com/gorilla/feeds",
+			"Rev": "441264de03a8117ed530ae8e049d8f601a33a099"
+		},
+		{
+			"ImportPath": "github.com/gorilla/securecookie",
+			"Comment": "v1.1-5-gfa5329f",
+			"Rev": "fa5329f913702981df43dcb2a380bac429c810b5"
+		},
+		{
+			"ImportPath": "github.com/kabukky/httpscerts",
+			"Rev": "617593d7dcb39c9ed617bb62c5e2056244d02184"
+		},
+		{
+			"ImportPath": "github.com/kardianos/osext",
+			"Rev": "c2c54e542fb797ad986b31721e1baedf214ca413"
+		},
+		{
+			"ImportPath": "github.com/mattn/go-sqlite3",
+			"Comment": "v1.2.0-3-g8ecd77c",
+			"Rev": "8ecd77c707d698b39fbcf76e4e8d08f284c8307f"
+		},
+		{
+			"ImportPath": "github.com/microcosm-cc/bluemonday",
+			"Rev": "e79763773ab6222ca1d5a7cbd9d62d83c1f77081"
+		},
+		{
+			"ImportPath": "github.com/twinj/uuid",
+			"Comment": "0.10.0-96-g7bbe408",
+			"Rev": "7bbe408d339787c56ec15568c947c0959db1b275"
+		},
+		{
+			"ImportPath": "github.com/yuin/gopher-lua",
+			"Rev": "7692488a1ad6bd06dc48890f4a149b65a86a767d"
+		},
+		{
+			"ImportPath": "github.com/yuin/gopher-lua/ast",
+			"Rev": "7692488a1ad6bd06dc48890f4a149b65a86a767d"
+		},
+		{
+			"ImportPath": "github.com/yuin/gopher-lua/parse",
+			"Rev": "7692488a1ad6bd06dc48890f4a149b65a86a767d"
+		},
+		{
+			"ImportPath": "github.com/yuin/gopher-lua/pm",
+			"Rev": "7692488a1ad6bd06dc48890f4a149b65a86a767d"
+		},
+		{
+			"ImportPath": "golang.org/x/crypto/bcrypt",
+			"Rev": "8a549a1948fc5271eb24f36dcb0d3b47dec75a16"
+		},
+		{
+			"ImportPath": "golang.org/x/crypto/blowfish",
+			"Rev": "8a549a1948fc5271eb24f36dcb0d3b47dec75a16"
+		},
+		{
+			"ImportPath": "golang.org/x/net/context",
+			"Rev": "4a1c855a052c2bad0e019ccfe8193a33d77adf5e"
+		},
+		{
+			"ImportPath": "golang.org/x/net/html",
+			"Rev": "4a1c855a052c2bad0e019ccfe8193a33d77adf5e"
+		},
+		{
+			"ImportPath": "golang.org/x/net/html/atom",
+			"Rev": "4a1c855a052c2bad0e019ccfe8193a33d77adf5e"
+		},
+		{
+			"ImportPath": "golang.org/x/sys/unix",
+			"Rev": "478fcf54317e52ab69f40bb4c7a1520288d7f7ea"
+		},
+		{
+			"ImportPath": "gopkg.in/fsnotify.v1",
+			"Comment": "v1.4.2",
+			"Rev": "629574ca2a5df945712d3079857300b5e4da0236"
+		}
+	]
+}

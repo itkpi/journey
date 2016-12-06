@@ -3,6 +3,7 @@ TODO.txt
 
 # Built binary
 bin/journey
+bin/godep
 
 # Log file
 log.txt
@@ -94,3 +95,6 @@ src/github.com/
 src/golang.org/
 src/gopkg.in/
 *.tar.gz*
+/journey
+/godep
+_workspace

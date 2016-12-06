@@ -8,6 +8,8 @@ containers:
         wget -nc https://storage.googleapis.com/golang/go1.5.linux-amd64.tar.gz
         tar -C /usr/local -xzf go1.5.linux-amd64.tar.gz
         ln -s /usr/local/go/bin/* /usr/bin/
+    environ:
+      GOPATH: /work
   journey:
     setup:
     - !Container journeydev
@@ -19,6 +21,8 @@ commands:
   run: !Command
     container: journeydev
     run: |
+        GOPATH=/work go get github.com/tools/godep
+        GOPATH=/work go build github.com/tools/godep
         GOPATH=/work go get journey
         GOPATH=/work go build journey
         /work/journey
