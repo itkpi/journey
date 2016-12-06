@@ -2,6 +2,7 @@
 	"ImportPath": "journey",
 	"GoVersion": "go1.5",
 	"GodepVersion": "v75",
+	"Packages": ["./src/journey"],
 	"Deps": [
 		{
 			"ImportPath": "github.com/dimfeld/httppath",
