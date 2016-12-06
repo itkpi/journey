@@ -1,1 +1,1 @@
-web: ./journey -http-port 8084
+web: journey -http-port 5000
