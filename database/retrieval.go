@@ -3,7 +3,7 @@ package database
 import (
 	"database/sql"
 	"encoding/json"
-	"journey/structure"
+	"github.com/itkpi/journey/structure"
 	"time"
 	"log"
 	"strconv"

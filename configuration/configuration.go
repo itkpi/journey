@@ -3,7 +3,7 @@ package configuration
 import (
 	"encoding/json"
 	"errors"
-	"journey/filenames"
+	"github.com/itkpi/journey/filenames"
 	"io/ioutil"
 	"log"
 	"reflect"

@@ -1,8 +1,8 @@
 package methods
 
 import (
-	"journey/database"
-	"journey/structure"
+	"github.com/itkpi/journey/database"
+	"github.com/itkpi/journey/structure"
 	"time"
 )
 

@@ -1,8 +1,8 @@
 package methods
 
 import (
-	"journey/slug"
-	"journey/structure"
+	"github.com/itkpi/journey/slug"
+	"github.com/itkpi/journey/structure"
 	"strings"
 )
 

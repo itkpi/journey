@@ -2,10 +2,10 @@ package database
 
 import (
 	"database/sql"
-	"journey/database/migration"
-	"journey/filenames"
-	"journey/helpers"
-	"journey/structure"
+	"github.com/itkpi/journey/database/migration"
+	"github.com/itkpi/journey/filenames"
+	"github.com/itkpi/journey/helpers"
+	"github.com/itkpi/journey/structure"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/twinj/uuid"
 	"time"

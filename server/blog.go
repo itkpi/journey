@@ -2,9 +2,9 @@ package server
 
 import (
 	"github.com/dimfeld/httptreemux"
-	"journey/filenames"
-	"journey/structure/methods"
-	"journey/templates"
+	"github.com/itkpi/journey/filenames"
+	"github.com/itkpi/journey/structure/methods"
+	"github.com/itkpi/journey/templates"
 	"net/http"
 	"path/filepath"
 	"strconv"

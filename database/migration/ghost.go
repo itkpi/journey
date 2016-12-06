@@ -3,8 +3,8 @@ package migration
 import (
 	"database/sql"
 	"errors"
-	"journey/filenames"
-	"journey/helpers"
+	"github.com/itkpi/journey/filenames"
+	"github.com/itkpi/journey/helpers"
 	"log"
 	"os"
 	"path/filepath"

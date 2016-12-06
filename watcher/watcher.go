@@ -1,7 +1,7 @@
 package watcher
 
 import (
-	"journey/helpers"
+	"github.com/itkpi/journey/helpers"
 	"gopkg.in/fsnotify.v1"
 	"log"
 	"os"

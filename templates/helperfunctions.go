@@ -1,7 +1,7 @@
 package templates
 
 import (
-	"journey/structure"
+	"github.com/itkpi/journey/structure"
 )
 
 var helperFuctions = map[string]func(*structure.Helper, *structure.RequestData) []byte{
