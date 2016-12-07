@@ -98,3 +98,4 @@ src/gopkg.in/
 /journey
 /godep
 _workspace
+.idea
