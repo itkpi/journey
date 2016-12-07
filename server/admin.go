@@ -83,11 +83,12 @@ type JsonPostAuthors []JsonUser
 
 // Function to serve the login page
 func getLoginHandler(w http.ResponseWriter, r *http.Request, _ map[string]string) {
-	log.Println(">> login!!")
 	if database.RetrieveUsersCount() == 0 {
 		http.Redirect(w, r, "/admin/register/", 302)
 		return
 	}
+	log.Println(">> login!!")
+	log.Println(filenames.AdminFilepath)
 	http.ServeFile(w, r, filepath.Join(filenames.AdminFilepath, "login.html"))
 	return
 }
@@ -1146,7 +1147,6 @@ func usersToJson(users []structure.User) *[]JsonUser {
 }
 
 func InitializeAdmin(router *httptreemux.TreeMux) {
-	log.Println(">> INIT ADMIN")
 	// For admin panel
 	router.GET("/admin/", adminHandler)
 	router.GET("/admin/login/", getLoginHandler)

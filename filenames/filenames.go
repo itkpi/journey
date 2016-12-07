@@ -31,9 +31,9 @@ var (
 	HttpsKeyFilename  = filepath.Join(ContentFilepath, "https", "key.pem")
 
 	//For built-in files (e.g. the admin interface)
-	AdminFilepath  = filepath.Join(ExecutablePath, "built-in", "admin")
-	PublicFilepath = filepath.Join(ExecutablePath, "built-in", "public")
-	HbsFilepath    = filepath.Join(ExecutablePath, "built-in", "hbs")
+	AdminFilepath  = filepath.Join(AssetPath, "built-in", "admin")
+	PublicFilepath = filepath.Join(AssetPath, "built-in", "public")
+	HbsFilepath    = filepath.Join(AssetPath, "built-in", "hbs")
 
 	// For handlebars (this is a url string)
 	JqueryFilename = "/public/jquery/jquery.js"
