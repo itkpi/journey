@@ -54,3 +54,4 @@ If your issue isn't discussed there, please create a [New Issue](https://github.
 
 ## Building from source
 Please refer to the [Building Journey from source](https://github.com/itkpi/journey/wiki/Building-Journey-from-source) Wiki page for instructions on how to build Journey from source.
+
