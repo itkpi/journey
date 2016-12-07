@@ -6,8 +6,8 @@
 
 {{ if eq $scheme "http" }}
 server {
-  listen      [::]:{{ $listen_port }};
-  listen      {{ $listen_port }};
+  listen      [::]:{{ $listen_port }} default;
+  listen      {{ $listen_port }} default;
   {{ if $.NOSSL_SERVER_NAME }}server_name {{ $.NOSSL_SERVER_NAME }}; {{ end }}
   access_log  /var/log/nginx/{{ $.APP }}-access.log;
   error_log   /var/log/nginx/{{ $.APP }}-error.log;
